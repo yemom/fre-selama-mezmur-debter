@@ -176,10 +176,11 @@ class AdminService {
   Future<void> createMusic({
     required String title,
     required String artist,
-    required String album,
+    String? album,
+    String? categoryId,
     required String lyrics,
-    required Uint8List audioBytes,
-    required String audioExt,
+    Uint8List? audioBytes,
+    String? audioExt,
     Uint8List? coverBytes,
     String? coverExt,
   }) async {
@@ -189,11 +190,13 @@ class AdminService {
     }
 
     final doc = _db.collection('music').doc();
-    final audioRef = _storage.ref().child(
-      'music/${doc.id}/audio.${audioExt.isEmpty ? 'mp3' : audioExt}',
-    );
-    final audioTask = await audioRef.putData(audioBytes);
-    final audioUrl = await audioTask.ref.getDownloadURL();
+    String audioUrl = '';
+    if (audioBytes != null) {
+      final ext = (audioExt == null || audioExt.isEmpty) ? 'mp3' : audioExt;
+      final audioRef = _storage.ref().child('music/${doc.id}/audio.$ext');
+      final audioTask = await audioRef.putData(audioBytes);
+      audioUrl = await audioTask.ref.getDownloadURL();
+    }
 
     String coverUrl = '';
     if (coverBytes != null) {
@@ -206,7 +209,8 @@ class AdminService {
     await doc.set({
       'title': title,
       'artist': artist,
-      'album': album,
+      'album': album ?? '',
+      'categoryId': categoryId ?? '',
       'lyrics': lyrics,
       'audioUrl': audioUrl,
       'coverUrl': coverUrl,
@@ -221,7 +225,8 @@ class AdminService {
     Music music, {
     required String title,
     required String artist,
-    required String album,
+    String? album,
+    String? categoryId,
     required String lyrics,
     Uint8List? audioBytes,
     String? audioExt,
@@ -247,7 +252,8 @@ class AdminService {
     await _db.collection('music').doc(music.id).update({
       'title': title,
       'artist': artist,
-      'album': album,
+      'album': album ?? music.album,
+      'categoryId': categoryId ?? music.categoryId,
       'lyrics': lyrics,
       'audioUrl': audioUrl,
       'coverUrl': coverUrl,

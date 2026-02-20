@@ -5,6 +5,7 @@ class Music {
   final String title;
   final String artist;
   final String album;
+  final String categoryId;
   final String coverUrl;
   final String audioUrl;
   final String lyrics;
@@ -14,6 +15,7 @@ class Music {
     required this.title,
     required this.artist,
     required this.album,
+    required this.categoryId,
     required this.coverUrl,
     required this.audioUrl,
     required this.lyrics,
@@ -26,6 +28,7 @@ class Music {
       title: data['title'] ?? '',
       artist: data['artist'] ?? '',
       album: data['album'] ?? '',
+      categoryId: (data['categoryId'] ?? data['category'] ?? '').toString(),
       coverUrl: data['coverUrl'] ?? '',
       audioUrl: data['audioUrl'] ?? '',
       lyrics: data['lyrics'] ?? '',

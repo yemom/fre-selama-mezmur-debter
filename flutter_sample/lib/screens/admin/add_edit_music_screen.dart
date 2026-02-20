@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import '../models/music.dart';
-import '../services/admin_service.dart';
+import '../../models/music.dart';
+import '../../services/admin_service.dart';
 
 class AddEditMusicScreen extends StatefulWidget {
   static const routeName = '/admin-music-edit';
@@ -16,13 +16,11 @@ class AddEditMusicScreen extends StatefulWidget {
 class _AddEditMusicScreenState extends State<AddEditMusicScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _artistController = TextEditingController();
-  final TextEditingController _albumController = TextEditingController();
   final TextEditingController _lyricsController = TextEditingController();
   final AdminService _service = AdminService();
 
-  String? _categoryId;
-
   Music? _music;
+  String? _categoryId;
   Uint8List? _coverBytes;
   Uint8List? _audioBytes;
   String? _coverExt;
@@ -38,7 +36,6 @@ class _AddEditMusicScreenState extends State<AddEditMusicScreen> {
       _music = args;
       _titleController.text = args.title;
       _artistController.text = args.artist;
-      _albumController.text = args.album;
       _categoryId = args.categoryId.isEmpty ? null : args.categoryId;
       _lyricsController.text = args.lyrics;
     }
@@ -103,8 +100,7 @@ class _AddEditMusicScreenState extends State<AddEditMusicScreen> {
         await _service.createMusic(
           title: title,
           artist: artist,
-          album: _albumController.text.trim(),
-          categoryId: _categoryId,
+          categoryId: _categoryId!,
           lyrics: _lyricsController.text.trim(),
           audioBytes: _audioBytes,
           audioExt: _audioExt,
@@ -116,8 +112,7 @@ class _AddEditMusicScreenState extends State<AddEditMusicScreen> {
           _music!,
           title: title,
           artist: artist,
-          album: _albumController.text.trim(),
-          categoryId: _categoryId,
+          categoryId: _categoryId!,
           lyrics: _lyricsController.text.trim(),
           audioBytes: _audioBytes,
           audioExt: _audioExt,
@@ -162,14 +157,6 @@ class _AddEditMusicScreenState extends State<AddEditMusicScreen> {
               controller: _artistController,
               decoration: const InputDecoration(
                 labelText: 'Artist',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _albumController,
-              decoration: const InputDecoration(
-                labelText: 'Album',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -223,7 +210,9 @@ class _AddEditMusicScreenState extends State<AddEditMusicScreen> {
                   child: OutlinedButton(
                     onPressed: _pickAudio,
                     child: Text(
-                      _audioBytes == null ? 'Upload Audio' : 'Audio Selected',
+                      _audioBytes == null
+                          ? 'Upload Audio (Optional)'
+                          : 'Audio Selected',
                     ),
                   ),
                 ),
