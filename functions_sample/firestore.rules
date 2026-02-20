@@ -1,17 +1,45 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() && userDoc().role == 'superadmin';
+    }
+
+    function isApprovedAdmin() {
+      return isSignedIn()
+        && userDoc().role == 'admin'
+        && userDoc().adminApproved == true;
+    }
+
+    function canManageContent() {
+      return isSuperAdmin() || isApprovedAdmin();
+    }
 
     match /users/{userId} {
-      allow read: if request.auth != null
-                  && request.auth.uid == userId;
-
-      allow write: if request.auth != null
-                   && request.auth.uid == userId;
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow write: if isSignedIn() && request.auth.uid == userId;
     }
 
     match /adminRequests/{userId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if isSignedIn();
+    }
+
+    match /music/{musicId} {
+      allow read: if true;
+      allow write: if canManageContent();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if canManageContent();
     }
   }
 }
