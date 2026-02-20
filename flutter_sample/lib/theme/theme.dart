@@ -65,6 +65,20 @@ class AppTheme {
         centerTitle: true,
         iconTheme: IconThemeData(color: Colors.white),
       ),
+      tabBarTheme: TabBarThemeData(
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.white.withValues(alpha: 0.75),
+        indicatorColor: Colors.white,
+        overlayColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.hovered)) {
+            return Colors.white.withValues(alpha: 0.12);
+          }
+          if (states.contains(WidgetState.pressed)) {
+            return Colors.white.withValues(alpha: 0.18);
+          }
+          return null;
+        }),
+      ),
       cardTheme: CardThemeData(
         color: cardColor,
         elevation: 0,
@@ -78,6 +92,25 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: ButtonStyle(
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.hovered)) {
+              return textPrimaryColor;
+            }
+            return primaryColor;
+          }),
+          overlayColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.hovered)) {
+              return primaryColor.withValues(alpha: 0.08);
+            }
+            if (states.contains(WidgetState.pressed)) {
+              return primaryColor.withValues(alpha: 0.12);
+            }
+            return null;
+          }),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
