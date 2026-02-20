@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "660937143367",
+    "project_id": "freselama-sunday-school",
+    "storage_bucket": "freselama-sunday-school.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:660937143367:android:a2f0617b74beef3271ed62",
+        "android_client_info": {
+          "package_name": "com.example.flutter_sample"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZRpoSD_-7-VqkVdOmumpX1ygsu9hngM4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
