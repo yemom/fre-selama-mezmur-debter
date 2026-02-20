@@ -158,7 +158,7 @@ class _MainScreenState extends State<MainScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Search categories',
+                            'Search categories & Music',
                             style: TextStyle(
                               fontSize: subtitleFontSize,
                               color: colorScheme.onPrimary.withValues(
@@ -183,7 +183,7 @@ class _MainScreenState extends State<MainScreen> {
                               controller: _searchController,
                               onChanged: (value) => _filterCategories(value),
                               decoration: InputDecoration(
-                                hintText: 'Search categories...',
+                                hintText: 'Search categories & Music',
                                 suffixIcon: _searchController.text.isNotEmpty
                                     ? IconButton(
                                         onPressed: () {

@@ -12,6 +12,7 @@ import 'package:flutter_sample/screens/user/about_developer_screen.dart';
 import 'package:flutter_sample/screens/user/music_list_screen.dart';
 import 'package:flutter_sample/screens/user/music_player_screen.dart';
 import 'package:flutter_sample/theme/theme.dart';
+import 'package:flutter_sample/widgets/user_background.dart';
 import 'firebase_options.dart';
 import 'screens/add_edit_music_screen.dart';
 
@@ -42,7 +43,7 @@ class MusicApp extends StatelessWidget {
         ManageMusicScreen.routeName: (_) => const ManageMusicScreen(),
         AddEditMusicScreen.routeName: (_) => const AddEditMusicScreen(),
         CategoryFormScreen.routeName: (_) => const CategoryFormScreen(),
-        MainScreen.routeName: (_) => const MainScreen(),
+        MainScreen.routeName: (_) => const UserBackground(child: MainScreen()),
         AboutDeveloperScreen.routeName: (_) => const AboutDeveloperScreen(),
         MusicListScreen.routeName: (_) => const MusicListScreen(),
         MusicPlayerScreen.routeName: (_) => const MusicPlayerScreen(),
@@ -111,7 +112,7 @@ class AuthGate extends StatelessWidget {
                 if (status == 'pending') {
                   return const AdminPendingScreen();
                 }
-                return const MainScreen();
+                return const UserBackground(child: MainScreen());
               },
             );
           },

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../models/category.dart';
 import '../../models/music.dart';
 import '../../services/music_service.dart';
-import '../../theme/theme.dart';
 import 'music_player_screen.dart';
 
 class CategoryScreen extends StatefulWidget {
@@ -49,8 +48,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(title: Text(widget.category.name)),
       body: Column(
         children: [
