@@ -90,15 +90,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.blueGrey,
-        title: const Text(
-          'Create Account',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-      ),
+      appBar: AppBar(title: const Text('ፍሬ ሰላማ ሰ/ት ቤት መዝሙር ደብተር')),
       body: SingleChildScrollView(
         child: SafeArea(
           child: Padding(
@@ -187,11 +181,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           ),
                         );
                       },
-                      child: const Text(
+                      child: Text(
                         'Login here',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Colors.blueGrey,
+                          color: colorScheme.primary,
                           letterSpacing: -1,
                         ),
                       ),

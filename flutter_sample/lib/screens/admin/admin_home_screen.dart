@@ -38,7 +38,7 @@ class AdminHomeScreen extends StatelessWidget {
           length: isSuperAdmin ? 4 : 2,
           child: Scaffold(
             appBar: AppBar(
-              title: const Text('Admin Dashboard'),
+              title: const Text('ፍሬ ሰላማ ሰ/ት ቤት መዝሙር ደብተር - Admin'),
               actions: [
                 IconButton(
                   onPressed: () => FirebaseAuth.instance.signOut(),

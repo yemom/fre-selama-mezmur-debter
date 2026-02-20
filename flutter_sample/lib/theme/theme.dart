@@ -16,15 +16,16 @@ class AppTheme {
 
   static ThemeData get theme {
     return ThemeData(
+      colorScheme: ColorScheme.fromSeed(seedColor: primaryColor),
       primaryColor: primaryColor,
       scaffoldBackgroundColor: backgroundColor,
       textTheme: GoogleFonts.poppinsTextTheme(),
       appBarTheme: AppBarTheme(
-        backgroundColor: cardColor,
-        foregroundColor: textPrimaryColor,
+        backgroundColor: primaryColor,
+        foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        iconTheme: IconThemeData(color: textPrimaryColor),
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       cardTheme: CardThemeData(
         color: cardColor,

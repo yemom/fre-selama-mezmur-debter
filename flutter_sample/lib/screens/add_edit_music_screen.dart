@@ -16,7 +16,6 @@ class AddEditMusicScreen extends StatefulWidget {
 class _AddEditMusicScreenState extends State<AddEditMusicScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _artistController = TextEditingController();
-  final TextEditingController _albumController = TextEditingController();
   final TextEditingController _lyricsController = TextEditingController();
   final AdminService _service = AdminService();
 
@@ -38,7 +37,6 @@ class _AddEditMusicScreenState extends State<AddEditMusicScreen> {
       _music = args;
       _titleController.text = args.title;
       _artistController.text = args.artist;
-      _albumController.text = args.album;
       _categoryId = args.categoryId.isEmpty ? null : args.categoryId;
       _lyricsController.text = args.lyrics;
     }
@@ -103,7 +101,6 @@ class _AddEditMusicScreenState extends State<AddEditMusicScreen> {
         await _service.createMusic(
           title: title,
           artist: artist,
-          album: _albumController.text.trim(),
           categoryId: _categoryId,
           lyrics: _lyricsController.text.trim(),
           audioBytes: _audioBytes,
@@ -116,7 +113,6 @@ class _AddEditMusicScreenState extends State<AddEditMusicScreen> {
           _music!,
           title: title,
           artist: artist,
-          album: _albumController.text.trim(),
           categoryId: _categoryId,
           lyrics: _lyricsController.text.trim(),
           audioBytes: _audioBytes,
@@ -162,14 +158,6 @@ class _AddEditMusicScreenState extends State<AddEditMusicScreen> {
               controller: _artistController,
               decoration: const InputDecoration(
                 labelText: 'Artist',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _albumController,
-              decoration: const InputDecoration(
-                labelText: 'Album',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -223,7 +211,9 @@ class _AddEditMusicScreenState extends State<AddEditMusicScreen> {
                   child: OutlinedButton(
                     onPressed: _pickAudio,
                     child: Text(
-                      _audioBytes == null ? 'Upload Audio' : 'Audio Selected',
+                      _audioBytes == null
+                          ? 'Upload Audio (Optional)'
+                          : 'Audio Selected',
                     ),
                   ),
                 ),

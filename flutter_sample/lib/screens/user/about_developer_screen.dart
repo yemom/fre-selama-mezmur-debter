@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../theme/theme.dart';
 
 class AboutDeveloperScreen extends StatelessWidget {
   static const routeName = '/about-developer';
@@ -8,8 +7,10 @@ class AboutDeveloperScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(title: const Text('About the Developer')),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -25,9 +26,9 @@ class AboutDeveloperScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  _infoRow('Name', 'Esrom Basazinaw'),
-                  _infoRow('Role', 'Flutter Developer'),
-                  _infoRow('Location', 'Addis Ababa, Ethiopia'),
+                  _infoRow(context, 'Name', 'Esrom Basazinaw'),
+                  _infoRow(context, 'Role', 'Flutter Developer'),
+                  _infoRow(context, 'Location', 'Addis Ababa, Ethiopia'),
                 ],
               ),
             ),
@@ -44,9 +45,20 @@ class AboutDeveloperScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  _infoRow('Email', '12yemom@gmail.com'),
-                  _infoRow('Phone', '+251 934046279'),
-                  _infoRow('Website', 'https://esrombasazinaw.com'),
+                  _infoRow(context, 'Email', '12yemom@gmail.com'),
+                  _infoRow(context, 'Phone', '+251 934046279'),
+                  _infoRow(context, 'Website', 'https://esrombasazinaw.com'),
+                  _infoRow(
+                    context,
+                    'LinkedIn',
+                    'www.linkedin.com/in/esrom-basazinew-65102a339',
+                  ),
+                  _infoRow(context, 'Telegram', 'https://t.me/yemom21'),
+                  _infoRow(
+                    context,
+                    'Instagram',
+                    'https://instagram.com/12yemom',
+                  ),
                 ],
               ),
             ),
@@ -66,44 +78,20 @@ class AboutDeveloperScreen extends StatelessWidget {
                   Text(
                     'This app helps users explore categories and enjoy music and lyrics.\n'
                     'It supports admin management for content updates and approvals.',
-                    style: TextStyle(color: AppTheme.textScondaryColor),
+                    style: TextStyle(color: colorScheme.onSurfaceVariant),
                   ),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Skills',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: const [
-                      _SkillChip('Flutter'),
-                      _SkillChip('Firebase'),
-                      _SkillChip('Dart'),
-                      _SkillChip('UI/UX'),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _infoRow(String label, String value) {
+  Widget _infoRow(BuildContext context, String label, String value) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
@@ -112,7 +100,7 @@ class AboutDeveloperScreen extends StatelessWidget {
             width: 90,
             child: Text(
               label,
-              style: TextStyle(color: AppTheme.textScondaryColor),
+              style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
           ),
           Expanded(
@@ -123,20 +111,6 @@ class AboutDeveloperScreen extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _SkillChip extends StatelessWidget {
-  final String label;
-
-  const _SkillChip(this.label);
-
-  @override
-  Widget build(BuildContext context) {
-    return Chip(
-      label: Text(label),
-      backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
     );
   }
 }

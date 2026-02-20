@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../models/category.dart';
 import '../../services/authenticate.dart';
-import '../../theme/theme.dart';
 import 'about_developer_screen.dart';
 import 'category_screen.dart';
 
@@ -54,6 +53,10 @@ class _MainScreenState extends State<MainScreen> {
         .orderBy('createdAt', descending: true)
         .get();
 
+    if (!mounted) {
+      return;
+    }
+
     setState(() {
       _allCategories = snapshot.docs
           .map(CategoryModel.fromDoc)
@@ -66,6 +69,9 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _filterCategories(String query, {String? categoryFilter}) {
+    if (!mounted) {
+      return;
+    }
     setState(() {
       _filteredCategories = _allCategories.where((category) {
         final matchesQuery =
@@ -82,9 +88,11 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     _calculateSizes(context);
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -92,7 +100,7 @@ class _MainScreenState extends State<MainScreen> {
             pinned: true,
             floating: true,
             centerTitle: true,
-            backgroundColor: AppTheme.primaryColor,
+            backgroundColor: colorScheme.primary,
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(20),
@@ -100,25 +108,25 @@ class _MainScreenState extends State<MainScreen> {
               ),
             ),
             title: Text(
-              'Music & Lyrics',
+              'መዝሙር ደብተር',
               style: TextStyle(
                 fontSize: titleFontSize,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: colorScheme.onPrimary,
               ),
             ),
             elevation: 0.0,
             actions: [
               IconButton(
                 icon: const Icon(Icons.info_outline),
-                color: AppTheme.backgroundColor,
+                color: colorScheme.onPrimary,
                 onPressed: () {
                   Navigator.pushNamed(context, AboutDeveloperScreen.routeName);
                 },
               ),
               IconButton(
                 icon: const Icon(Icons.exit_to_app),
-                color: AppTheme.backgroundColor,
+                color: colorScheme.onPrimary,
                 onPressed: () async {
                   final navigator = Navigator.of(context);
                   final route = MaterialPageRoute(
@@ -141,11 +149,11 @@ class _MainScreenState extends State<MainScreen> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            'Welcome!',
+                            'እንኳን ደህና መጡ!',
                             style: TextStyle(
                               fontSize: titleFontSize,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: colorScheme.onPrimary,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -153,13 +161,15 @@ class _MainScreenState extends State<MainScreen> {
                             'Search categories',
                             style: TextStyle(
                               fontSize: subtitleFontSize,
-                              color: Colors.white.withValues(alpha: 0.8),
+                              color: colorScheme.onPrimary.withValues(
+                                alpha: 0.8,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 8),
                           Container(
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: colorScheme.surface,
                               borderRadius: BorderRadius.circular(8),
                               boxShadow: [
                                 BoxShadow(
@@ -181,7 +191,7 @@ class _MainScreenState extends State<MainScreen> {
                                           _filterCategories('');
                                         },
                                         icon: const Icon(Icons.clear),
-                                        color: AppTheme.primaryColor,
+                                        color: colorScheme.primary,
                                       )
                                     : null,
                                 border: InputBorder.none,
@@ -212,13 +222,13 @@ class _MainScreenState extends State<MainScreen> {
                         filter,
                         style: TextStyle(
                           color: _selectedFilter == filter
-                              ? Colors.white
-                              : AppTheme.textPrimaryColor,
+                              ? colorScheme.onPrimary
+                              : colorScheme.onSurface,
                         ),
                       ),
                       selected: _selectedFilter == filter,
-                      selectedColor: AppTheme.primaryColor,
-                      backgroundColor: Colors.white,
+                      selectedColor: colorScheme.primary,
+                      backgroundColor: colorScheme.surface,
                       onSelected: (_) {
                         setState(() {
                           _selectedFilter = filter;
@@ -241,7 +251,7 @@ class _MainScreenState extends State<MainScreen> {
                     child: Center(
                       child: Text(
                         'No categories found',
-                        style: TextStyle(color: AppTheme.textScondaryColor),
+                        style: TextStyle(color: colorScheme.onSurfaceVariant),
                       ),
                     ),
                   )
@@ -266,6 +276,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildCategoryCard(CategoryModel category) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -287,12 +298,12 @@ class _MainScreenState extends State<MainScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                  color: colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   Icons.quiz,
-                  color: AppTheme.primaryColor,
+                  color: colorScheme.primary,
                   size: mediumIconSize,
                 ),
               ),
@@ -302,7 +313,7 @@ class _MainScreenState extends State<MainScreen> {
                 style: TextStyle(
                   fontSize: titleFontSize * 0.8,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimaryColor,
+                  color: colorScheme.onSurface,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 2,
@@ -313,7 +324,7 @@ class _MainScreenState extends State<MainScreen> {
                 category.description,
                 style: TextStyle(
                   fontSize: bodyFontSize,
-                  color: AppTheme.textScondaryColor,
+                  color: colorScheme.onSurfaceVariant,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 2,

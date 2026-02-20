@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_sample/screens/log_in_screen.dart';
+import 'package:flutter_sample/screens/sign_in_screen.dart';
 import 'package:flutter_sample/screens/sign_up_screen.dart';
 
 class Authenticate extends StatefulWidget {
@@ -21,7 +21,7 @@ class _AuthenticateState extends State<Authenticate> {
   @override
   Widget build(BuildContext context) {
     if (showSignIn) {
-      return Login(toggleView: toggleView);
+      return const SignInScreen();
     } else {
       return const SignUpScreen();
     }

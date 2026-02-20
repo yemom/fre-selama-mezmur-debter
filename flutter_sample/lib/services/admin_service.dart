@@ -50,30 +50,6 @@ class Category {
   }
 }
 
-class Album {
-  final String id;
-  final String name;
-  final String artist;
-  final String description;
-
-  const Album({
-    required this.id,
-    required this.name,
-    required this.artist,
-    required this.description,
-  });
-
-  factory Album.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data() ?? {};
-    return Album(
-      id: doc.id,
-      name: data['name'] ?? '',
-      artist: data['artist'] ?? '',
-      description: data['description'] ?? '',
-    );
-  }
-}
-
 class AppUser {
   final String uid;
   final String email;
@@ -141,14 +117,6 @@ class AdminService {
         .map((snapshot) => snapshot.docs.map(AdminRequest.fromDoc).toList());
   }
 
-  Stream<List<Album>> watchAlbums() {
-    return _db
-        .collection('albums')
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map((snapshot) => snapshot.docs.map(Album.fromDoc).toList());
-  }
-
   Stream<List<AppUser>> watchUsers() {
     return _db
         .collection('users')
@@ -176,7 +144,6 @@ class AdminService {
   Future<void> createMusic({
     required String title,
     required String artist,
-    String? album,
     String? categoryId,
     required String lyrics,
     Uint8List? audioBytes,
@@ -209,7 +176,6 @@ class AdminService {
     await doc.set({
       'title': title,
       'artist': artist,
-      'album': album ?? '',
       'categoryId': categoryId ?? '',
       'lyrics': lyrics,
       'audioUrl': audioUrl,
@@ -225,7 +191,6 @@ class AdminService {
     Music music, {
     required String title,
     required String artist,
-    String? album,
     String? categoryId,
     required String lyrics,
     Uint8List? audioBytes,
@@ -252,7 +217,6 @@ class AdminService {
     await _db.collection('music').doc(music.id).update({
       'title': title,
       'artist': artist,
-      'album': album ?? music.album,
       'categoryId': categoryId ?? music.categoryId,
       'lyrics': lyrics,
       'audioUrl': audioUrl,
@@ -296,36 +260,5 @@ class AdminService {
 
   Future<void> deleteCategory(String id) async {
     await _db.collection('categories').doc(id).delete();
-  }
-
-  Future<void> createAlbum({
-    required String name,
-    required String artist,
-    required String description,
-  }) async {
-    await _db.collection('albums').add({
-      'name': name,
-      'artist': artist,
-      'description': description,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
-  }
-
-  Future<void> updateAlbum({
-    required String id,
-    required String name,
-    required String artist,
-    required String description,
-  }) async {
-    await _db.collection('albums').doc(id).update({
-      'name': name,
-      'artist': artist,
-      'description': description,
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
-  }
-
-  Future<void> deleteAlbum(String id) async {
-    await _db.collection('albums').doc(id).delete();
   }
 }

@@ -2,16 +2,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_sample/screens/admin/admin_home_screen.dart';
+import 'package:flutter_sample/screens/admin/admin_pending_screen.dart';
+import 'package:flutter_sample/screens/admin/admin_signup_form.dart';
+import 'package:flutter_sample/screens/admin/category_form_screen.dart';
+import 'package:flutter_sample/screens/admin/manage_music_screen.dart';
+import 'package:flutter_sample/screens/user/main_screen.dart';
+import 'package:flutter_sample/screens/user/about_developer_screen.dart';
+import 'package:flutter_sample/screens/user/music_list_screen.dart';
+import 'package:flutter_sample/screens/user/music_player_screen.dart';
+import 'package:flutter_sample/theme/theme.dart';
 import 'firebase_options.dart';
-import 'screens/admin_login_screen.dart';
-import 'screens/admin_home_screen.dart';
-import 'screens/admin_pending_screen.dart';
 import 'screens/add_edit_music_screen.dart';
-import 'screens/album_form_screen.dart';
-import 'screens/category_form_screen.dart';
-import 'screens/main_screen.dart';
-import 'screens/music_list_screen.dart';
-import 'screens/music_player_screen.dart';
+
 import 'screens/sign_in_screen.dart';
 import 'screens/sign_up_screen.dart';
 
@@ -27,23 +30,22 @@ class MusicApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Music App',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
-        useMaterial3: true,
-      ),
+      title: 'ፍሬ ሰላማ ሰ/ት ቤት መዝሙር ደብተር',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.theme,
       routes: {
         SignInScreen.routeName: (_) => const SignInScreen(),
         SignUpScreen.routeName: (_) => const SignUpScreen(),
         AdminHomeScreen.routeName: (_) => const AdminHomeScreen(),
         AdminPendingScreen.routeName: (_) => const AdminPendingScreen(),
+        AdminSignupForm.routeName: (_) => const AdminSignupForm(),
+        ManageMusicScreen.routeName: (_) => const ManageMusicScreen(),
         AddEditMusicScreen.routeName: (_) => const AddEditMusicScreen(),
-        AlbumFormScreen.routeName: (_) => const AlbumFormScreen(),
         CategoryFormScreen.routeName: (_) => const CategoryFormScreen(),
         MainScreen.routeName: (_) => const MainScreen(),
+        AboutDeveloperScreen.routeName: (_) => const AboutDeveloperScreen(),
         MusicListScreen.routeName: (_) => const MusicListScreen(),
         MusicPlayerScreen.routeName: (_) => const MusicPlayerScreen(),
-        AdminLoginScreen.routeName: (_) => const AdminLoginScreen(),
       },
       home: const AuthGate(),
     );
