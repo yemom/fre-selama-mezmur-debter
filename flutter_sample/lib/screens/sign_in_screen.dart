@@ -11,19 +11,27 @@ import 'sign_up_screen.dart';
 class SignInScreen extends StatefulWidget {
   static const routeName = '/sign-in';
 
-  const SignInScreen({super.key});
+  final AuthClient? authService;
+
+  const SignInScreen({super.key, this.authService});
 
   @override
   State<SignInScreen> createState() => _SignInScreenState();
 }
 
 class _SignInScreenState extends State<SignInScreen> {
-  final AuthService _authService = AuthService();
+  late final AuthClient _authService;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   bool _isLoading = false;
   bool _isPasswordHidden = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _authService = widget.authService ?? AuthService();
+  }
 
   void _login() async {
     setState(() => _isLoading = true);
@@ -66,7 +74,7 @@ class _SignInScreenState extends State<SignInScreen> {
     if (result == 'SuperAdmin' || result == 'Admin') {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const AdminHomeScreen()),
+        MaterialPageRoute(builder: (_) => AdminHomeScreen()),
       );
       return;
     }

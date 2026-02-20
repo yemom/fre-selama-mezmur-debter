@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_functions/cloud_functions.dart';
@@ -146,10 +145,6 @@ class AdminService {
     required String artist,
     String? categoryId,
     required String lyrics,
-    Uint8List? audioBytes,
-    String? audioExt,
-    Uint8List? coverBytes,
-    String? coverExt,
   }) async {
     final user = _auth.currentUser;
     if (user == null) {
@@ -157,29 +152,14 @@ class AdminService {
     }
 
     final doc = _db.collection('music').doc();
-    String audioUrl = '';
-    if (audioBytes != null) {
-      final ext = (audioExt == null || audioExt.isEmpty) ? 'mp3' : audioExt;
-      final audioRef = _storage.ref().child('music/${doc.id}/audio.$ext');
-      final audioTask = await audioRef.putData(audioBytes);
-      audioUrl = await audioTask.ref.getDownloadURL();
-    }
-
-    String coverUrl = '';
-    if (coverBytes != null) {
-      final ext = (coverExt == null || coverExt.isEmpty) ? 'jpg' : coverExt;
-      final coverRef = _storage.ref().child('covers/${doc.id}.$ext');
-      final coverTask = await coverRef.putData(coverBytes);
-      coverUrl = await coverTask.ref.getDownloadURL();
-    }
 
     await doc.set({
       'title': title,
       'artist': artist,
       'categoryId': categoryId ?? '',
       'lyrics': lyrics,
-      'audioUrl': audioUrl,
-      'coverUrl': coverUrl,
+      'audioUrl': '',
+      'coverUrl': '',
       'likes': 0,
       'createdBy': user.uid,
       'createdAt': FieldValue.serverTimestamp(),
@@ -193,34 +173,12 @@ class AdminService {
     required String artist,
     String? categoryId,
     required String lyrics,
-    Uint8List? audioBytes,
-    String? audioExt,
-    Uint8List? coverBytes,
-    String? coverExt,
   }) async {
-    String audioUrl = music.audioUrl;
-    if (audioBytes != null) {
-      final ext = (audioExt == null || audioExt.isEmpty) ? 'mp3' : audioExt;
-      final audioRef = _storage.ref().child('music/${music.id}/audio.$ext');
-      final audioTask = await audioRef.putData(audioBytes);
-      audioUrl = await audioTask.ref.getDownloadURL();
-    }
-
-    String coverUrl = music.coverUrl;
-    if (coverBytes != null) {
-      final ext = (coverExt == null || coverExt.isEmpty) ? 'jpg' : coverExt;
-      final coverRef = _storage.ref().child('covers/${music.id}.$ext');
-      final coverTask = await coverRef.putData(coverBytes);
-      coverUrl = await coverTask.ref.getDownloadURL();
-    }
-
     await _db.collection('music').doc(music.id).update({
       'title': title,
       'artist': artist,
       'categoryId': categoryId ?? music.categoryId,
       'lyrics': lyrics,
-      'audioUrl': audioUrl,
-      'coverUrl': coverUrl,
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }

@@ -9,68 +9,54 @@ class MusicPlayerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final music = ModalRoute.of(context)?.settings.arguments as Music?;
+    final titleText = (music?.title ?? '').trim().isEmpty ? ' ' : music!.title;
+    final artistText = (music?.artist ?? '').trim().isEmpty
+        ? ' '
+        : music!.artist;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Now Playing')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              music?.title ?? 'Select a song',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
+            Text('Title', style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 4),
             Text(
-              music?.artist ?? 'Artist',
+              titleText,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 12),
+            Text('Artist', style: Theme.of(context).textTheme.titleSmall),
+            const SizedBox(height: 4),
+            Text(
+              artistText,
+              textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: music?.coverUrl.isNotEmpty == true
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
-                        music!.coverUrl,
-                        width: 200,
-                        height: 200,
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                  : Icon(
-                      Icons.album,
-                      size: 140,
-                      color: Colors.blueGrey.shade200,
-                    ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.skip_previous, size: 32),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.play_circle_fill, size: 56),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.skip_next, size: 32),
-                ),
-              ],
             ),
             const SizedBox(height: 16),
             Text('Lyrics', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
             Expanded(
-              child: SingleChildScrollView(
-                child: Text(
-                  music?.lyrics ?? 'Lyrics will appear here.',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: Center(
+                        child: Text(
+                          music?.lyrics ?? 'Lyrics will appear here.',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ],

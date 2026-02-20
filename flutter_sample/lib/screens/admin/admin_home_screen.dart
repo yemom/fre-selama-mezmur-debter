@@ -6,8 +6,9 @@ import '../../services/admin_service.dart';
 import 'add_edit_music_screen.dart';
 import 'admin_signup_form.dart';
 import 'mannage_admin_request.dart';
-import 'category_form_screen.dart';
+import 'manage_categories_screen.dart';
 import 'manage_music_screen.dart';
+import 'manage_users_screen.dart';
 
 class AdminHomeScreen extends StatelessWidget {
   static const routeName = '/admin-home';
@@ -34,86 +35,59 @@ class AdminHomeScreen extends StatelessWidget {
             .replaceAll('_', '');
         final isSuperAdmin = role == 'superadmin';
 
-        return DefaultTabController(
-          length: isSuperAdmin ? 4 : 2,
-          child: Scaffold(
-            appBar: AppBar(
-              title: const Text('ፍሬ ሰላማ ሰ/ት ቤት መዝሙር ደብተር - Admin'),
-              actions: [
-                IconButton(
-                  onPressed: () => FirebaseAuth.instance.signOut(),
-                  icon: const Icon(Icons.logout),
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('ፍሬ ሰላማ ሰ/ት ቤት መዝሙር ደብተር - Admin'),
+            actions: [
+              IconButton(
+                onPressed: () => FirebaseAuth.instance.signOut(),
+                icon: const Icon(Icons.logout),
+              ),
+            ],
+          ),
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                _AdminDashboard(isSuperAdmin: isSuperAdmin),
+                _AdminActionCards(
+                  onAddMusic: () => Navigator.pushNamed(
+                    context,
+                    AddEditMusicScreen.routeName,
+                  ),
+                  onManageMusic: () =>
+                      Navigator.pushNamed(context, ManageMusicScreen.routeName),
+                  onManageCategories: () => Navigator.pushNamed(
+                    context,
+                    ManageCategoriesScreen.routeName,
+                  ),
+                  onCreateAdmin: isSuperAdmin
+                      ? () => Navigator.pushNamed(
+                          context,
+                          AdminSignupForm.routeName,
+                        )
+                      : null,
+                ),
+                _AdminManagementCards(
+                  isSuperAdmin: isSuperAdmin,
+                  onOpenUsers: isSuperAdmin
+                      ? () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                const ManageUsersScreen(canEdit: true),
+                          ),
+                        )
+                      : null,
+                  onOpenRequests: isSuperAdmin
+                      ? () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ManageAdminRequestsScreen(),
+                          ),
+                        )
+                      : null,
                 ),
               ],
-              bottom: TabBar(
-                tabs: [
-                  const Tab(text: 'Music'),
-                  const Tab(text: 'Categories'),
-                  if (isSuperAdmin) const Tab(text: 'Users'),
-                  if (isSuperAdmin) const Tab(text: 'Requests'),
-                ],
-              ),
-            ),
-            body: Builder(
-              builder: (context) {
-                final controller = DefaultTabController.of(context);
-                return Column(
-                  children: [
-                    _AdminActionCards(
-                      onAddMusic: () => Navigator.pushNamed(
-                        context,
-                        AddEditMusicScreen.routeName,
-                      ),
-                      onManageMusic: () => Navigator.pushNamed(
-                        context,
-                        ManageMusicScreen.routeName,
-                      ),
-                      onManageCategories: () => controller.index = 1,
-                      onCreateAdmin: isSuperAdmin
-                          ? () => Navigator.pushNamed(
-                              context,
-                              AdminSignupForm.routeName,
-                            )
-                          : null,
-                    ),
-                    Expanded(
-                      child: TabBarView(
-                        children: [
-                          const _AdminMusicTab(),
-                          const _AdminCategoriesTab(),
-                          if (isSuperAdmin) const _AdminUsersTab(),
-                          if (isSuperAdmin) const ManageAdminRequestsScreen(),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-            floatingActionButton: Builder(
-              builder: (context) {
-                final controller = DefaultTabController.of(context);
-                final tabIndex = controller.index;
-                if (tabIndex > 1) {
-                  return const SizedBox.shrink();
-                }
-                return FloatingActionButton(
-                  onPressed: () {
-                    if (tabIndex == 1) {
-                      Navigator.pushNamed(
-                        context,
-                        CategoryFormScreen.routeName,
-                      );
-                    } else {
-                      Navigator.pushNamed(
-                        context,
-                        AddEditMusicScreen.routeName,
-                      );
-                    }
-                  },
-                  child: const Icon(Icons.add),
-                );
-              },
             ),
           ),
         );
@@ -182,6 +156,316 @@ class _AdminActionCards extends StatelessWidget {
   }
 }
 
+class _AdminDashboard extends StatelessWidget {
+  final bool isSuperAdmin;
+
+  const _AdminDashboard({required this.isSuperAdmin});
+
+  String _formatDate(Timestamp? timestamp) {
+    if (timestamp == null) {
+      return 'Unknown date';
+    }
+    final date = timestamp.toDate();
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$month-$day';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final service = AdminService();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: StreamBuilder<List<Category>>(
+                  stream: service.watchCategories(),
+                  builder: (context, snapshot) {
+                    final total = snapshot.data?.length ?? 0;
+                    return _StatCard(
+                      title: 'Total Categories',
+                      value: total.toString(),
+                      icon: Icons.category_outlined,
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: StreamBuilder<List<Music>>(
+                  stream: service.watchMusic(),
+                  builder: (context, snapshot) {
+                    final total = snapshot.data?.length ?? 0;
+                    return _StatCard(
+                      title: 'Total Songs',
+                      value: total.toString(),
+                      icon: Icons.library_music_outlined,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.pie_chart_outline),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Category Statistics',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  StreamBuilder<List<Category>>(
+                    stream: service.watchCategories(),
+                    builder: (context, categorySnapshot) {
+                      final categories = categorySnapshot.data ?? [];
+                      return StreamBuilder<List<Music>>(
+                        stream: service.watchMusic(),
+                        builder: (context, musicSnapshot) {
+                          final music = musicSnapshot.data ?? [];
+                          if (categories.isEmpty) {
+                            return const Text('No categories yet.');
+                          }
+                          final total = music.isEmpty ? 1 : music.length;
+                          final counts = <String, int>{};
+                          for (final item in music) {
+                            final key = item.categoryId.isEmpty
+                                ? 'Uncategorized'
+                                : item.categoryId;
+                            counts[key] = (counts[key] ?? 0) + 1;
+                          }
+
+                          return Column(
+                            children: categories.map((category) {
+                              final count = counts[category.id] ?? 0;
+                              final percent = ((count / total) * 100).round();
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 6,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            category.name.toUpperCase(),
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          Text('$count songs'),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.surfaceVariant,
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Text('$percent%'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.history),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Recent Activity',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                    stream: FirebaseFirestore.instance
+                        .collection('music')
+                        .orderBy('createdAt', descending: true)
+                        .limit(5)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      final docs = snapshot.data?.docs ?? [];
+                      if (docs.isEmpty) {
+                        return const Text('No recent activity.');
+                      }
+                      return Column(
+                        children: docs.map((doc) {
+                          final data = doc.data();
+                          final title = data['title'] as String? ?? 'Untitled';
+                          final artist =
+                              data['artist'] as String? ?? 'Unknown artist';
+                          final createdAt = data['createdAt'] as Timestamp?;
+                          return ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(Icons.library_music),
+                            title: Text(title),
+                            subtitle: Text(
+                              '$artist • ${_formatDate(createdAt)}',
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+        ],
+      ),
+    );
+  }
+}
+
+class _AdminManagementCards extends StatelessWidget {
+  final bool isSuperAdmin;
+  final VoidCallback? onOpenUsers;
+  final VoidCallback? onOpenRequests;
+
+  const _AdminManagementCards({
+    required this.isSuperAdmin,
+    this.onOpenUsers,
+    this.onOpenRequests,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (!isSuperAdmin) {
+      return const SizedBox.shrink();
+    }
+
+    final service = AdminService();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
+      child: Column(
+        children: [
+          StreamBuilder<List<AppUser>>(
+            stream: service.watchUsers(),
+            builder: (context, snapshot) {
+              final total = snapshot.data?.length ?? 0;
+              return Card(
+                child: ListTile(
+                  leading: const Icon(Icons.people_outline),
+                  title: const Text('Manage Users'),
+                  subtitle: Text('$total total users'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: onOpenUsers,
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          StreamBuilder<List<AdminRequest>>(
+            stream: service.watchAdminRequests(),
+            builder: (context, snapshot) {
+              final requests = snapshot.data ?? [];
+              final pending = requests
+                  .where((item) => item.status == 'pending')
+                  .length;
+              return Card(
+                child: ListTile(
+                  leading: const Icon(Icons.admin_panel_settings_outlined),
+                  title: const Text('Manage Admin Requests'),
+                  subtitle: Text(
+                    pending == 0
+                        ? 'No pending admin requests'
+                        : '$pending pending admin requests',
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: onOpenRequests,
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+
+  const _StatCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceVariant,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, size: 20),
+            ),
+            const SizedBox(height: 10),
+            Text(value, style: Theme.of(context).textTheme.headlineSmall),
+            const SizedBox(height: 4),
+            Text(title, style: Theme.of(context).textTheme.bodySmall),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _ActionCard extends StatelessWidget {
   final String title;
   final IconData icon;
@@ -213,267 +497,6 @@ class _ActionCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _AdminMusicTab extends StatelessWidget {
-  const _AdminMusicTab();
-
-  @override
-  Widget build(BuildContext context) {
-    final service = AdminService();
-
-    return StreamBuilder<List<Music>>(
-      stream: service.watchMusic(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final items = snapshot.data ?? [];
-        if (items.isEmpty) {
-          return const Center(child: Text('No music uploaded yet.'));
-        }
-        return ListView.separated(
-          itemCount: items.length,
-          separatorBuilder: (_, __) => const Divider(height: 1),
-          itemBuilder: (context, index) {
-            final item = items[index];
-            return ListTile(
-              title: Text(item.title),
-              subtitle: Text(item.artist),
-              onTap: () => Navigator.pushNamed(
-                context,
-                AddEditMusicScreen.routeName,
-                arguments: item,
-              ),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete_outline),
-                onPressed: () async {
-                  final confirmed = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Delete music?'),
-                      content: const Text(
-                        'This will remove audio and metadata.',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: const Text('Delete'),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (confirmed == true) {
-                    await service.deleteMusic(item);
-                  }
-                },
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-}
-
-class _AdminUsersTab extends StatelessWidget {
-  const _AdminUsersTab();
-
-  @override
-  Widget build(BuildContext context) {
-    final service = AdminService();
-
-    return StreamBuilder<List<AdminRequest>>(
-      stream: service.watchAdminRequests(),
-      builder: (context, requestSnapshot) {
-        final requests = requestSnapshot.data ?? [];
-        return StreamBuilder<List<AppUser>>(
-          stream: service.watchUsers(),
-          builder: (context, userSnapshot) {
-            if (requestSnapshot.connectionState == ConnectionState.waiting ||
-                userSnapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            final users = userSnapshot.data ?? [];
-            return ListView(
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text(
-                    'Admin Requests',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                if (requests.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text('No admin requests.'),
-                  )
-                else
-                  ...requests.map(
-                    (request) => ListTile(
-                      title: Text(request.email),
-                      subtitle: Text('Status: ${request.status}'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.check_circle_outline),
-                            onPressed: request.status == 'pending'
-                                ? () => service.decideAdminRequest(
-                                    request.uid,
-                                    true,
-                                  )
-                                : null,
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.cancel_outlined),
-                            onPressed: request.status == 'pending'
-                                ? () => service.decideAdminRequest(
-                                    request.uid,
-                                    false,
-                                  )
-                                : null,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                const Divider(height: 32),
-                const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text(
-                    'Users',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                if (users.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text('No users found.'),
-                  )
-                else
-                  ...users.map(
-                    (user) => ListTile(
-                      title: Text(user.email.isEmpty ? user.uid : user.email),
-                      subtitle: Text(
-                        'Role: ${user.role} • Approved: ${user.adminApproved}',
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          DropdownButton<String>(
-                            value: user.role,
-                            items: const [
-                              DropdownMenuItem(
-                                value: 'client',
-                                child: Text('Client'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'admin',
-                                child: Text('Admin'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'super-admin',
-                                child: Text('Super Admin'),
-                              ),
-                            ],
-                            onChanged: (value) {
-                              if (value == null || value == user.role) {
-                                return;
-                              }
-                              service.setUserRole(user.uid, value);
-                            },
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              user.blocked
-                                  ? Icons.lock_open
-                                  : Icons.lock_outline,
-                            ),
-                            onPressed: () =>
-                                service.setUserBlocked(user.uid, !user.blocked),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-}
-
-class _AdminCategoriesTab extends StatelessWidget {
-  const _AdminCategoriesTab();
-
-  @override
-  Widget build(BuildContext context) {
-    final service = AdminService();
-
-    return StreamBuilder<List<Category>>(
-      stream: service.watchCategories(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final categories = snapshot.data ?? [];
-        if (categories.isEmpty) {
-          return const Center(child: Text('No categories yet.'));
-        }
-
-        return ListView.separated(
-          itemCount: categories.length,
-          separatorBuilder: (_, __) => const Divider(height: 1),
-          itemBuilder: (context, index) {
-            final category = categories[index];
-            return ListTile(
-              title: Text(category.name),
-              subtitle: Text(category.description),
-              onTap: () => Navigator.pushNamed(
-                context,
-                CategoryFormScreen.routeName,
-                arguments: category,
-              ),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete_outline),
-                onPressed: () async {
-                  final confirmed = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('Delete category?'),
-                      content: const Text('This will remove the category.'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: const Text('Delete'),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (confirmed == true) {
-                    await service.deleteCategory(category.id);
-                  }
-                },
-              ),
-            );
-          },
-        );
-      },
     );
   }
 }

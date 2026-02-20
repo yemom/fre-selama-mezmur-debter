@@ -6,6 +6,7 @@ import 'package:flutter_sample/screens/admin/admin_home_screen.dart';
 import 'package:flutter_sample/screens/admin/admin_pending_screen.dart';
 import 'package:flutter_sample/screens/admin/admin_signup_form.dart';
 import 'package:flutter_sample/screens/admin/category_form_screen.dart';
+import 'package:flutter_sample/screens/admin/manage_categories_screen.dart';
 import 'package:flutter_sample/screens/admin/manage_music_screen.dart';
 import 'package:flutter_sample/screens/user/main_screen.dart';
 import 'package:flutter_sample/screens/user/about_developer_screen.dart';
@@ -37,10 +38,11 @@ class MusicApp extends StatelessWidget {
       routes: {
         SignInScreen.routeName: (_) => const SignInScreen(),
         SignUpScreen.routeName: (_) => const SignUpScreen(),
-        AdminHomeScreen.routeName: (_) => const AdminHomeScreen(),
+        AdminHomeScreen.routeName: (_) => AdminHomeScreen(),
         AdminPendingScreen.routeName: (_) => const AdminPendingScreen(),
         AdminSignupForm.routeName: (_) => const AdminSignupForm(),
         ManageMusicScreen.routeName: (_) => const ManageMusicScreen(),
+        ManageCategoriesScreen.routeName: (_) => const ManageCategoriesScreen(),
         AddEditMusicScreen.routeName: (_) => const AddEditMusicScreen(),
         CategoryFormScreen.routeName: (_) => const CategoryFormScreen(),
         MainScreen.routeName: (_) => const UserBackground(child: MainScreen()),
@@ -98,7 +100,7 @@ class AuthGate extends StatelessWidget {
             final approved = data['adminApproved'] == true;
 
             if (role == 'superadmin' || (role == 'admin' && approved)) {
-              return const AdminHomeScreen();
+              return AdminHomeScreen();
             }
 
             return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(

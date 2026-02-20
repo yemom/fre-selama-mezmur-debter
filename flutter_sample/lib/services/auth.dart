@@ -39,6 +39,7 @@ class AuthService implements AuthClient {
     : _authOverride = authClient,
       _firestoreOverride = firestore;
 
+  @override
   Future<String?> signup({
     required String name,
     required String email,
@@ -82,6 +83,7 @@ class AuthService implements AuthClient {
     }
   }
 
+  @override
   Future<String?> login({
     required String email,
     required String password,
@@ -109,6 +111,7 @@ class AuthService implements AuthClient {
     }
   }
 
+  @override
   Future<bool> isSuperAdmin() async {
     final user = _auth.currentUser;
     if (user == null) return false;
@@ -129,6 +132,7 @@ class AuthService implements AuthClient {
     }
   }
 
+  @override
   Future<bool> isAdmin() async {
     final user = _auth.currentUser;
     if (user == null) return false;
@@ -146,6 +150,7 @@ class AuthService implements AuthClient {
     }
   }
 
+  @override
   Future<String?> requestSuperAdmin() async {
     try {
       final uid = _auth.currentUser?.uid;
@@ -168,6 +173,7 @@ class AuthService implements AuthClient {
     }
   }
 
+  @override
   Future<String?> approveAdminRequest({
     required String userId,
     required String approvedBy,
@@ -192,6 +198,7 @@ class AuthService implements AuthClient {
     }
   }
 
+  @override
   Future<String?> rejectAdminRequest({
     required String userId,
     required String approvedBy,
@@ -214,6 +221,7 @@ class AuthService implements AuthClient {
     }
   }
 
+  @override
   Future<void> signOut() async {
     await _auth.signOut();
   }

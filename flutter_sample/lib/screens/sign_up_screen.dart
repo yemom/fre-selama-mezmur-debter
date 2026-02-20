@@ -5,7 +5,9 @@ import 'sign_in_screen.dart';
 class SignUpScreen extends StatefulWidget {
   static const routeName = '/sign-up';
 
-  const SignUpScreen({super.key});
+  final AuthClient? authService;
+
+  const SignUpScreen({super.key, this.authService});
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -15,11 +17,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final AuthService _authService = AuthService();
+  late final AuthClient _authService;
   String _role = 'User';
 
   bool _isLoading = false;
   bool _isPasswordHidden = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _authService = widget.authService ?? AuthService();
+  }
 
   Future<void> _signUp() async {
     final name = _nameController.text.trim();
@@ -167,7 +175,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ),
                               const SizedBox(height: 16),
                               DropdownButtonFormField<String>(
-                                value: _role,
+                                initialValue: _role,
                                 items: const [
                                   DropdownMenuItem(
                                     value: 'User',

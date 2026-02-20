@@ -45,8 +45,6 @@ class AppTheme {
       colorScheme: baseScheme.copyWith(
         primary: primaryColor,
         secondary: secondaryColor,
-        background: backgroundColor,
-        onBackground: textPrimaryColor,
         surface: cardColor,
         onSurface: textPrimaryColor,
         onPrimary: Colors.white,

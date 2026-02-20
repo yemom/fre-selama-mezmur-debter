@@ -24,18 +24,85 @@ abstract class AuthClient {
   Future<void> signOut();
 }
 
+abstract class AuthStore {
+  Future<Map<String, dynamic>?> getUser(String uid);
+  Future<void> setUser(String uid, Map<String, dynamic> data, {bool merge});
+  Future<void> updateUser(String uid, Map<String, dynamic> data);
+  Future<Map<String, dynamic>?> getAdminRequest(String uid);
+  Future<void> setAdminRequest(
+    String uid,
+    Map<String, dynamic> data, {
+    bool merge,
+  });
+  Future<void> updateAdminRequest(String uid, Map<String, dynamic> data);
+}
+
+class FirestoreAuthStore implements AuthStore {
+  FirestoreAuthStore(this._firestore);
+
+  final FirebaseFirestore _firestore;
+
+  @override
+  Future<Map<String, dynamic>?> getUser(String uid) async {
+    final doc = await _firestore.collection('users').doc(uid).get();
+    return doc.exists ? doc.data() : null;
+  }
+
+  @override
+  Future<void> setUser(
+    String uid,
+    Map<String, dynamic> data, {
+    bool merge = false,
+  }) async {
+    await _firestore
+        .collection('users')
+        .doc(uid)
+        .set(data, SetOptions(merge: merge));
+  }
+
+  @override
+  Future<void> updateUser(String uid, Map<String, dynamic> data) async {
+    await _firestore.collection('users').doc(uid).update(data);
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getAdminRequest(String uid) async {
+    final doc = await _firestore.collection('adminRequests').doc(uid).get();
+    return doc.exists ? doc.data() : null;
+  }
+
+  @override
+  Future<void> setAdminRequest(
+    String uid,
+    Map<String, dynamic> data, {
+    bool merge = false,
+  }) async {
+    await _firestore
+        .collection('adminRequests')
+        .doc(uid)
+        .set(data, SetOptions(merge: merge));
+  }
+
+  @override
+  Future<void> updateAdminRequest(String uid, Map<String, dynamic> data) async {
+    await _firestore.collection('adminRequests').doc(uid).update(data);
+  }
+}
+
 class AuthService implements AuthClient {
   final auth.FirebaseAuth? _authOverride;
-  final FirebaseFirestore? _firestoreOverride;
+  final AuthStore _store;
   String? _lastLoginDebug;
 
   auth.FirebaseAuth get _auth => _authOverride ?? auth.FirebaseAuth.instance;
-  FirebaseFirestore get _firestore =>
-      _firestoreOverride ?? FirebaseFirestore.instance;
 
-  AuthService({auth.FirebaseAuth? authClient, FirebaseFirestore? firestore})
-    : _authOverride = authClient,
-      _firestoreOverride = firestore;
+  AuthService({
+    auth.FirebaseAuth? authClient,
+    FirebaseFirestore? firestore,
+    AuthStore? store,
+  }) : _authOverride = authClient,
+       _store =
+           store ?? FirestoreAuthStore(firestore ?? FirebaseFirestore.instance);
 
   String? get lastLoginDebugInfo => _lastLoginDebug;
 
@@ -59,24 +126,24 @@ class AuthService implements AuthClient {
       print('FIRESTORE DOC UID => $uid');
 
       final wantsAdmin = role.toLowerCase() == 'admin';
-      await _firestore.collection('users').doc(uid).set({
+      await _store.setUser(uid, {
         'name': name.trim(),
         'email': email.trim(),
         'role': wantsAdmin ? 'admin' : 'client',
         'adminApproved': !wantsAdmin,
         'blocked': false,
         'createdAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      }, merge: true);
 
       if (wantsAdmin) {
-        await _firestore.collection('adminRequests').doc(uid).set({
+        await _store.setAdminRequest(uid, {
           'userId': uid,
           'email': email.trim(),
           'status': 'pending',
           'requestedAt': FieldValue.serverTimestamp(),
           'approvedAt': null,
           'approvedBy': null,
-        }, SetOptions(merge: true));
+        }, merge: true);
         return 'AdminPending';
       }
 
@@ -185,13 +252,12 @@ class AuthService implements AuthClient {
       final uid = _auth.currentUser?.uid;
       if (uid == null) return 'Not signed in';
 
-      final reqRef = _firestore.collection('adminRequests').doc(uid);
-      final existing = await reqRef.get();
-      if (existing.exists) {
-        final status = existing.data()?['status'] as String? ?? 'pending';
+      final existing = await _store.getAdminRequest(uid);
+      if (existing != null) {
+        final status = existing['status'] as String? ?? 'pending';
         return 'Request already $status';
       }
-      await reqRef.set({
+      await _store.setAdminRequest(uid, {
         'userId': uid,
         'status': 'pending',
         'requestedAt': FieldValue.serverTimestamp(),
@@ -208,20 +274,16 @@ class AuthService implements AuthClient {
     required String approvedBy,
   }) async {
     try {
-      final reqRef = _firestore.collection('adminRequests').doc(userId);
-      final snap = await reqRef.get();
-      if (!snap.exists) return 'Request not found';
+      final existing = await _store.getAdminRequest(userId);
+      if (existing == null) return 'Request not found';
 
-      await reqRef.update({
+      await _store.updateAdminRequest(userId, {
         'status': 'approved',
         'approvedBy': approvedBy,
         'approvedAt': FieldValue.serverTimestamp(),
       });
 
-      await _firestore.collection('users').doc(userId).update({
-        'role': 'admin',
-        'adminApproved': true,
-      });
+      await _store.updateUser(userId, {'role': 'admin', 'adminApproved': true});
       return 'Approved';
     } catch (e) {
       return e.toString();
@@ -234,17 +296,16 @@ class AuthService implements AuthClient {
     required String approvedBy,
   }) async {
     try {
-      final reqRef = _firestore.collection('adminRequests').doc(userId);
-      final snap = await reqRef.get();
-      if (!snap.exists) return 'Request not found';
+      final existing = await _store.getAdminRequest(userId);
+      if (existing == null) return 'Request not found';
 
-      await reqRef.update({
+      await _store.updateAdminRequest(userId, {
         'status': 'rejected',
         'approvedBy': approvedBy,
         'approvedAt': FieldValue.serverTimestamp(),
       });
 
-      await _firestore.collection('users').doc(userId).update({
+      await _store.updateUser(userId, {
         'role': 'client',
         'adminApproved': false,
       });
@@ -285,10 +346,10 @@ class AuthService implements AuthClient {
   }
 
   Future<Map<String, dynamic>> _loadUserData(String uid) async {
-    final doc = await _firestore.collection('users').doc(uid).get();
-    if (!doc.exists) {
+    final data = await _store.getUser(uid);
+    if (data == null) {
       throw Exception('User document not found');
     }
-    return doc.data() ?? {};
+    return data;
   }
 }

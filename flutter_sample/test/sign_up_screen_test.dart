@@ -1,7 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_sample/screens/sign_in_screen.dart';
-import 'package:flutter_sample/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_sample/screens/sign_up_screen.dart';
+import 'package:flutter_sample/services/auth_service.dart';
 
 class _TestAuthClient implements AuthClient {
   @override
@@ -52,16 +52,19 @@ class _TestAuthClient implements AuthClient {
 }
 
 void main() {
-  testWidgets('Sign in screen renders inputs and button', (
+  testWidgets('Sign up screen renders inputs and button', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(
-      MaterialApp(home: SignInScreen(authService: _TestAuthClient())),
+      MaterialApp(home: SignUpScreen(authService: _TestAuthClient())),
     );
 
+    expect(find.text('Name'), findsOneWidget);
     expect(find.text('Email'), findsOneWidget);
     expect(find.text('Password'), findsOneWidget);
-    expect(find.text('Login'), findsOneWidget);
-    expect(find.byType(TextField), findsNWidgets(2));
+    expect(find.text('Role'), findsOneWidget);
+    expect(find.text('Sign Up'), findsOneWidget);
+    expect(find.byType(TextField), findsNWidgets(3));
+    expect(find.byType(DropdownButtonFormField<String>), findsOneWidget);
   });
 }
